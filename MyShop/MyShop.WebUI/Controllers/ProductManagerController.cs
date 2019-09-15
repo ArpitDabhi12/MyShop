@@ -1,4 +1,5 @@
-﻿using MyShop.Core.Models;
+﻿using MyShop.Core.Contracts;
+using MyShop.Core.Models;
 using MyShop.Core.ViewModels;
 using MyShop.DataAccess.InMemory;
 using System;
@@ -12,19 +13,19 @@ namespace MyShop.WebUI.Controllers
     public class ProductManagerController : Controller
     {
 
-        InMemoryRepository<Product> context;
-        InMemoryRepository<ProductCategory> categoryRepository;
+        IRepository<Product> productContext;
+        IRepository<ProductCategory> productCategoryContext;
 
-        public ProductManagerController()
+        public ProductManagerController(IRepository<Product> _productContext, IRepository<ProductCategory> _productCategoryContext)
         {
-            context = new InMemoryRepository<Product>();
-            categoryRepository = new InMemoryRepository<ProductCategory>();
+            this.productContext = _productContext;
+            this.productCategoryContext = _productCategoryContext;
         }
 
         // GET: ProductManager
         public ActionResult Index()
         {
-            List<Product> products = context.Collection().ToList();
+            List<Product> products = productContext.Collection().ToList();
             return View(products);
         }
 
@@ -33,7 +34,7 @@ namespace MyShop.WebUI.Controllers
             ProductManagerViewModel productManagerViewModel = new ProductManagerViewModel()
             {
                 Product = new Product(),
-                productCategories = categoryRepository.Collection()
+                productCategories = productCategoryContext.Collection()
             };
             return View(productManagerViewModel);
         }
@@ -47,15 +48,15 @@ namespace MyShop.WebUI.Controllers
             }
             else
             {
-                context.Insert(product);
-                context.Commit();
+                productContext.Insert(product);
+                productContext.Commit();
                 return RedirectToAction("Index");
             }
         }
 
         public ActionResult Edit(string Id)
         {
-            Product product = context.Find(Id);
+            Product product = productContext.Find(Id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -65,7 +66,7 @@ namespace MyShop.WebUI.Controllers
                 ProductManagerViewModel productManagerViewModel = new ProductManagerViewModel()
                 {
                     Product = product,
-                    productCategories = categoryRepository.Collection()
+                    productCategories = productCategoryContext.Collection()
                 };
                 return View(productManagerViewModel);
             }
@@ -74,7 +75,7 @@ namespace MyShop.WebUI.Controllers
         [HttpPost]
         public ActionResult Edit(Product product, string Id)
         {
-            Product productToEdit = context.Find(Id);
+            Product productToEdit = productContext.Find(Id);
             if (productToEdit == null)
             {
                 return HttpNotFound();
@@ -93,7 +94,7 @@ namespace MyShop.WebUI.Controllers
                     productToEdit.Name = product.Name;
                     productToEdit.Price = product.Price;
 
-                    context.Commit();
+                    productContext.Commit();
                     return RedirectToAction("Index");
                 }
             }
@@ -101,7 +102,7 @@ namespace MyShop.WebUI.Controllers
 
         public ActionResult Delete(string Id)
         {
-            Product product = context.Find(Id);
+            Product product = productContext.Find(Id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -116,15 +117,15 @@ namespace MyShop.WebUI.Controllers
         [ActionName("Delete")]
         public ActionResult ConfirmDelete(string Id)
         {
-            Product product = context.Find(Id);
+            Product product = productContext.Find(Id);
             if (product == null)
             {
                 return HttpNotFound();
             }
             else
             {
-                context.Delete(Id);
-                context.Commit();
+                productContext.Delete(Id);
+                productContext.Commit();
                 return RedirectToAction("Index");
             }
         }
