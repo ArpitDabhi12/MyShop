@@ -35,7 +35,7 @@ namespace MyShop.WebUI.Controllers
             ProductManagerViewModel productManagerViewModel = new ProductManagerViewModel()
             {
                 Product = new Product(),
-                productCategories = productCategoryContext.Collection()
+                ProductCategories = productCategoryContext.Collection()
             };
             return View(productManagerViewModel);
         }
@@ -73,7 +73,7 @@ namespace MyShop.WebUI.Controllers
                 ProductManagerViewModel productManagerViewModel = new ProductManagerViewModel()
                 {
                     Product = product,
-                    productCategories = productCategoryContext.Collection()
+                    ProductCategories = productCategoryContext.Collection()
                 };
                 return View(productManagerViewModel);
             }

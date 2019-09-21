@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace MyShop.Core.ViewModels
 {
-    public class ProductManagerViewModel
+    public class ProductListViewModel
     {
-        public Product Product { get; set; }
+        public IEnumerable<Product> Products { get; set; }
         public IEnumerable<ProductCategory> ProductCategories { get; set; }
     }
 }
