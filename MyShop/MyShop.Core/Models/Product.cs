@@ -21,7 +21,7 @@ namespace MyShop.Core.Models
         public string Category { get; set; }
 
         [Range(0, 1000)]
-        public string Price { get; set; }
+        public decimal Price { get; set; }
 
     }
 }
