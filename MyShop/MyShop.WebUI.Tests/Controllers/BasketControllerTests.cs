@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Principal;
 using System.Web.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MyShop.Core.Contracts;
@@ -20,10 +21,15 @@ namespace MyShop.WebUI.Tests.Controllers
             //Assign
             IRepository<Basket> basketContext = new MockContext<Basket>();
             IRepository<Product> productContext = new MockContext<Product>();
+            IRepository<Order> orderContext = new MockContext<Order>();
+            IRepository<Customer> customerContext = new MockContext<Customer>();
+
             var httpContext = new MockHttpContext();
 
             IBasketService basketService = new BasketService(productContext, basketContext);
-            var basketController = new BasketController(basketService);
+            IOrderService orderService = new OrderService(orderContext);
+
+            var basketController = new BasketController(basketService, orderService, customerContext);
             basketController.ControllerContext = new System.Web.Mvc.ControllerContext(httpContext, new System.Web.Routing.RouteData(), basketController);
 
             //basketService.AddToBasket(httpContext, "1");
@@ -44,6 +50,9 @@ namespace MyShop.WebUI.Tests.Controllers
         {
             IRepository<Basket> basketRepository = new MockContext<Basket>();
             IRepository<Product> productRepository = new MockContext<Product>();
+            IRepository<Order> orderContext = new MockContext<Order>();
+            IRepository<Customer> customerContext = new MockContext<Customer>();
+
             var httpContext = new MockHttpContext();
 
             productRepository.Insert(new Product() { Id = "1", Price = 10.00m });
@@ -55,7 +64,9 @@ namespace MyShop.WebUI.Tests.Controllers
             basketRepository.Insert(basket);
 
             IBasketService basketService = new BasketService(productRepository, basketRepository);
-            var controller = new BasketController(basketService);
+            IOrderService orderService = new OrderService(orderContext);
+
+            var controller = new BasketController(basketService, orderService, customerContext);
             httpContext.Request.Cookies.Add(new System.Web.HttpCookie("eCommerceBasket") { Value = basket.Id });
             controller.ControllerContext = new System.Web.Mvc.ControllerContext(httpContext, new System.Web.Routing.RouteData(), controller);
 
@@ -64,7 +75,48 @@ namespace MyShop.WebUI.Tests.Controllers
             var basketSummary = (BasketSummaryViewModel)result.ViewData.Model;
             Assert.AreEqual(3, basketSummary.BasketCount);
             Assert.AreEqual(25.00m, basketSummary.BasketTotal);
+        }
 
+        [TestMethod]
+        public void CanCheckoutAndCreateOrder()
+        {
+            IRepository<Product> productRepository = new MockContext<Product>();
+            productRepository.Insert(new Product() { Id = "1", Price = 10.00m });
+            productRepository.Insert(new Product() { Id = "2", Price = 5.00m });
+
+            IRepository<Basket> basketRepository = new MockContext<Basket>();
+            Basket basket = new Basket();
+            basket.BasketItems.Add(new BasketItem() { ProductId = "1", Quantity = 2, BasketId = basket.Id });
+            basket.BasketItems.Add(new BasketItem() { ProductId = "2", Quantity = 1, BasketId = basket.Id });
+            basketRepository.Insert(basket);
+
+            IBasketService basketService = new BasketService(productRepository, basketRepository);
+
+            IRepository<Order> orderRepository = new MockContext<Order>();
+            IRepository<Customer> customerContext = new MockContext<Customer>();
+            IOrderService orderService = new OrderService(orderRepository);
+
+            var controller = new BasketController(basketService, orderService, customerContext);
+            var httpContext = new MockHttpContext();
+
+
+            customerContext.Insert(new Customer() { Id = "1", Email = "arpit@gmail.com", ZipCode = "351023" });
+            IPrincipal mockUser = new GenericPrincipal(new GenericIdentity("arpit@gmail.com", "Forms"), null);
+            httpContext.User = mockUser;
+
+            httpContext.Request.Cookies.Add(new System.Web.HttpCookie("eCommerceBasket") { Value = basket.Id });
+            controller.ControllerContext = new ControllerContext(httpContext, new System.Web.Routing.RouteData(), controller);
+
+            //Act
+            Order order = new Order();
+            controller.CheckOut(order);
+
+            //Assert
+            Assert.AreEqual(2, order.OrderItems.Count);
+            Assert.AreEqual(0, basket.BasketItems.Count);
+
+            Order orderInRepo = orderRepository.Find(order.Id);
+            Assert.AreEqual(2, orderInRepo.OrderItems.Count);
         }
     }
 }
