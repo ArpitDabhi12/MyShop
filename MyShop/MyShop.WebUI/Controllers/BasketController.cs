@@ -78,12 +78,12 @@ namespace MyShop.WebUI.Controllers
             if (ModelState.IsValid)
             {
                 var basketItems = basketService.GetBasketItems(this.HttpContext);
-                order.State = "Order Created";
+                order.OrderStatus = "Order Created";
                 order.Email = User.Identity.Name;
 
                 //payment processing
 
-                order.State = "Payment processed";
+                order.OrderStatus = "Payment processed";
                 orderService.CreateOrder(order, basketItems);
                 basketService.ClearBasket(this.HttpContext);
 

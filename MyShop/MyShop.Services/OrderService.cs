@@ -34,5 +34,21 @@ namespace MyShop.Services
             orderRepository.Insert(order);
             orderRepository.Commit();
         }
+
+        public List<Order> GetOrders()
+        {
+            return orderRepository.Collection().ToList();
+        }
+
+        public Order GetOrder(string id)
+        {
+            return orderRepository.Find(id);
+        }
+
+        public void UpdateOrder(Order order)
+        {
+            orderRepository.Update(order);
+            orderRepository.Commit();
+        }
     }
 }

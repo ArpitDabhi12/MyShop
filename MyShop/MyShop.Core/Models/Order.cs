@@ -39,6 +39,8 @@ namespace MyShop.Core.Models
         [DisplayName("Zip Code")]
         [Required]
         public string ZipCode { get; set; }
+
+        [DisplayName("Order Status")]
         public string OrderStatus { get; set; }
         public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
