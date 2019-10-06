@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace MyShop.WebUI.Models
@@ -82,8 +83,11 @@ namespace MyShop.WebUI.Models
 
 
         [Required]
+        [DisplayName("First Name")]
         public string FirstName { get; set; }
+
         [Required]
+        [DisplayName("Last Name")]
         public string LastName { get; set; }
         [Required]
         public string Street { get; set; }
@@ -91,7 +95,9 @@ namespace MyShop.WebUI.Models
         public string City { get; set; }
         [Required]
         public string State { get; set; }
+
         [Required]
+        [DisplayName("Zip Code")]
         public string ZipCode { get; set; }
     }
 
